@@ -1,0 +1,7 @@
+dplyr>=1.06
+rgl>=0.106.8
+scatterplot3d>=0.3.41
+ggplot2>=3.3.5
+grid>=4.1.0
+gridExtra>=2.3
+cowplot>=1.1.1
