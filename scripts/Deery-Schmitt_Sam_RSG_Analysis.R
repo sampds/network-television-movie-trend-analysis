@@ -2,20 +2,49 @@
 # Subject: Working with RSG Media Data
 # 12/15 - 12/18, 2021
 
+packrat::init()
+
+# if packrat::init() fails then run the pkg install function and then run packrat::init()
+
+# List the packages to install
+pkg <- c("packrat", "dplyr", "htmlwidgets", "rgl", "scatterplot3d", "ggplot2", "grid", "gridExtra", "cowplot")
+
+# Use this function to install packages
+install_if_missing <- function(pkg) {
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg)) {
+    install.packages(new.pkg, dependencies = TRUE)
+  }
+}
+
+# Now apply the function on the packages
+install_if_missing(pkg)
+
 # data manipulation
-library(dplyr)
+require(dplyr)
 # interactive 3d plot
-library(rgl)
+require(htmlwidgets)
+require(rgl)
 # 3d plot
-library(scatterplot3d)
+require(scatterplot3d)
 # bar graphs with a bunch of dimensions
 library(ggplot2)
 # was using for side-by-side plotting, actually using cowplot for that instead
 # ggplot objects don't work with par(mfrow()) so have to use this, lattice, or something similar
-library(grid)
-library(gridExtra)
+require(grid)
+require(gridExtra)
 # for side-by-side plots, and extracting the legend and creating a legend object
-library(cowplot)
+require(cowplot)
+
+# run if having issues
+# unlink("./packrat", recursive = TRUE)
+# packrat::clean()
+# packrat::restore()
+
+packrat::snapshot()
+
+# run this if getting wrong snapshot
+# packrat::snapshot(ignore.stale=TRUE)
 
 # files
 "Top_Movie_Ranker_Full_Data.csv"
@@ -122,7 +151,7 @@ colnames(movie_data_P18_49)[c(1:2, 7:8, 11)] <- c("Program.Network", "Daypart", 
 # ie instead of df$vector you can just input vector
 
 attach(movie_data_18_49)
- 
+
 agg <- aggregate(cbind(GRPs, Average.Audience) ~ Program.Network + Daypart + Target + Network.Group + GN.Top.Genre, data = movie_data_18_49, FUN =sum)
 # View(agg)
 
@@ -220,8 +249,8 @@ planes3d(a = 0, b = -46438, c = 0, d= 4776950, color = "gray", alpha =0.5, shini
 # the dataframe to return the movie information
 
 selected_plots <- identify3d(Average.Audience, GRPs, Median.Age, labels = Program.Network, 
-           plot = TRUE, tolerance = 20, 
-           buttons = c("right", "middle"))
+                             plot = TRUE, tolerance = 20, 
+                             buttons = c("right", "middle"))
 Program.Network[selected_plots]
 
 # save the current view of the plot as a png
@@ -450,84 +479,84 @@ iterate_over_age <- function(age, df, color_vector) {
   # just have to make sure the y labels show up on the first one
   # i was iteratively building these plots and making sure it worked first
   
-    gg1 <- ggplot(morning, aes(x = reorder(Program.Network, -GRPs), 
-                          y = GRPs, fill = GN.Top.Genre)) +
-      geom_bar(position = "dodge", stat = "identity") +
-      # xlab("Program\\Network") +
-      xlab("") +
-      geom_text(aes(label = gsub("18-49", "", Target)), vjust = -0.5) +
-      ggtitle (paste(age, "morning")) +
-      theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none") +
-      coord_cartesian(ylim = c(0, 1.2*max(temp_agg$GRPs))) + 
-      scale_fill_manual(values  = color_vector)
-   
-    gg2 <- ggplot(daytime, aes(x = reorder(Program.Network, -GRPs), 
-                          y = GRPs, fill = GN.Top.Genre)) +
-      geom_bar(position = "dodge", stat = "identity") +
-      # xlab("Program\\Network") + 
-      xlab("") +
-      ylab("") +
-      geom_text(aes(label = gsub("18-49", "", Target)), vjust = -0.5) +
-      ggtitle (paste(age, "daytime")) +
-      theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none") +
-      coord_cartesian(ylim = c(0, 1.2*max(temp_agg$GRPs))) + 
-      scale_fill_manual(values  = color_vector)
-    
-     gg3 <- ggplot(early_fringe, aes(x = reorder(Program.Network, -GRPs), 
-                           y = GRPs, fill = GN.Top.Genre)) +
-       geom_bar(position = "dodge", stat = "identity") +
-       xlab("Program\\Network") + 
-       # xlab("") +
-       ylab("") +
-       geom_text(aes(label = gsub("18-49", "", Target)), vjust = -0.5) +
-       ggtitle (paste(age, "early_fringe")) +
-       theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none") +
-       coord_cartesian(ylim = c(0, 1.2*max(temp_agg$GRPs))) + 
-       scale_fill_manual(values  = color_vector)
-     
-     gg4 <- ggplot(prime, aes(x = reorder(Program.Network, -GRPs), 
-                           y = GRPs, fill = GN.Top.Genre)) +
-       geom_bar(position = "dodge", stat = "identity") +
-       # xlab("Program\\Network") + 
-       xlab("") +
-       ylab("") +
-       geom_text(aes(label = gsub("18-49", "", Target)), vjust = -0.5) +
-       ggtitle (paste(age, "prime")) +
-       theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none") +
-       coord_cartesian(ylim = c(0, 1.2*max(temp_agg$GRPs))) + 
-       scale_fill_manual(values  = color_vector)
-     
-     gg5 <- ggplot(overnight, aes(x = reorder(Program.Network, -GRPs), 
-                           y = GRPs, fill = GN.Top.Genre)) +
-       geom_bar(position = "dodge", stat = "identity") +
-       # xlab("Program\\Network") + 
-       xlab("") +
-       ylab("") +
-       geom_text(aes(label = gsub("18-49", "", Target)), vjust = -0.5) +
-       ggtitle (paste(age, "overnight")) +
-       theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none") +
-       coord_cartesian(ylim = c(0, 1.2*max(temp_agg$GRPs))) + 
-       scale_fill_manual(values  = color_vector)
-     
-     # must call the inputted datframe for this to work
-     gg6 <- ggplot(temp_agg, aes(x = reorder(Program.Network, -GRPs), 
-                              y = GRPs, fill = GN.Top.Genre)) +
-       geom_bar(position = "dodge", stat = "identity") +
-       # xlab("Program\\Network") + 
-       xlab("") +
-       ylab("") +
-       geom_text(aes(label = gsub("18-49", "", Target)), vjust = -0.5) +
-       ggtitle (paste(age, "overnight")) +
-       theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-       coord_cartesian(ylim = c(0, 1.2*max(temp_agg$GRPs))) + 
-       scale_fill_manual(values  = color_vector) 
-     # create legend from previous object
-     ggleg <- cowplot::get_legend(gg6)
-     
-     # this will make them all the same height, 6 in a column
+  gg1 <- ggplot(morning, aes(x = reorder(Program.Network, -GRPs), 
+                             y = GRPs, fill = GN.Top.Genre)) +
+    geom_bar(position = "dodge", stat = "identity") +
+    # xlab("Program\\Network") +
+    xlab("") +
+    geom_text(aes(label = gsub("18-49", "", Target)), vjust = -0.5) +
+    ggtitle (paste(age, "morning")) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none") +
+    coord_cartesian(ylim = c(0, 1.2*max(temp_agg$GRPs))) + 
+    scale_fill_manual(values  = color_vector)
   
-     plot_grid(gg1, gg2, gg3, gg4, gg5, ggleg, align = "h", ncol = 6, rel_heights = c(1,1,1,1,1,1),
-               axis = "b" )
+  gg2 <- ggplot(daytime, aes(x = reorder(Program.Network, -GRPs), 
+                             y = GRPs, fill = GN.Top.Genre)) +
+    geom_bar(position = "dodge", stat = "identity") +
+    # xlab("Program\\Network") + 
+    xlab("") +
+    ylab("") +
+    geom_text(aes(label = gsub("18-49", "", Target)), vjust = -0.5) +
+    ggtitle (paste(age, "daytime")) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none") +
+    coord_cartesian(ylim = c(0, 1.2*max(temp_agg$GRPs))) + 
+    scale_fill_manual(values  = color_vector)
+  
+  gg3 <- ggplot(early_fringe, aes(x = reorder(Program.Network, -GRPs), 
+                                  y = GRPs, fill = GN.Top.Genre)) +
+    geom_bar(position = "dodge", stat = "identity") +
+    xlab("Program\\Network") + 
+    # xlab("") +
+    ylab("") +
+    geom_text(aes(label = gsub("18-49", "", Target)), vjust = -0.5) +
+    ggtitle (paste(age, "early_fringe")) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none") +
+    coord_cartesian(ylim = c(0, 1.2*max(temp_agg$GRPs))) + 
+    scale_fill_manual(values  = color_vector)
+  
+  gg4 <- ggplot(prime, aes(x = reorder(Program.Network, -GRPs), 
+                           y = GRPs, fill = GN.Top.Genre)) +
+    geom_bar(position = "dodge", stat = "identity") +
+    # xlab("Program\\Network") + 
+    xlab("") +
+    ylab("") +
+    geom_text(aes(label = gsub("18-49", "", Target)), vjust = -0.5) +
+    ggtitle (paste(age, "prime")) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none") +
+    coord_cartesian(ylim = c(0, 1.2*max(temp_agg$GRPs))) + 
+    scale_fill_manual(values  = color_vector)
+  
+  gg5 <- ggplot(overnight, aes(x = reorder(Program.Network, -GRPs), 
+                               y = GRPs, fill = GN.Top.Genre)) +
+    geom_bar(position = "dodge", stat = "identity") +
+    # xlab("Program\\Network") + 
+    xlab("") +
+    ylab("") +
+    geom_text(aes(label = gsub("18-49", "", Target)), vjust = -0.5) +
+    ggtitle (paste(age, "overnight")) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none") +
+    coord_cartesian(ylim = c(0, 1.2*max(temp_agg$GRPs))) + 
+    scale_fill_manual(values  = color_vector)
+  
+  # must call the inputted datframe for this to work
+  gg6 <- ggplot(temp_agg, aes(x = reorder(Program.Network, -GRPs), 
+                              y = GRPs, fill = GN.Top.Genre)) +
+    geom_bar(position = "dodge", stat = "identity") +
+    # xlab("Program\\Network") + 
+    xlab("") +
+    ylab("") +
+    geom_text(aes(label = gsub("18-49", "", Target)), vjust = -0.5) +
+    ggtitle (paste(age, "overnight")) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    coord_cartesian(ylim = c(0, 1.2*max(temp_agg$GRPs))) + 
+    scale_fill_manual(values  = color_vector) 
+  # create legend from previous object
+  ggleg <- cowplot::get_legend(gg6)
+  
+  # this will make them all the same height, 6 in a column
+  
+  plot_grid(gg1, gg2, gg3, gg4, gg5, ggleg, align = "h", ncol = 6, rel_heights = c(1,1,1,1,1,1),
+            axis = "b" )
 }
 
 # i can't figure out how to fix the issue that the bars are varying widths
@@ -606,7 +635,7 @@ iterate_over_group <- function(age_string, df, color_vector) {
   # i was iteratively building these plots and making sure it worked first
   
   gg1 <- ggplot(morning, aes(x = reorder(Program.Network, -GRPs), 
-                               y = GRPs, fill = GN.Top.Genre)) +
+                             y = GRPs, fill = GN.Top.Genre)) +
     geom_bar(position = "dodge", stat = "identity") +
     # xlab("Program\\Network") +
     xlab("") +
@@ -629,7 +658,7 @@ iterate_over_group <- function(age_string, df, color_vector) {
     scale_fill_manual(values = color_vector)
   
   gg3 <- ggplot(early_fringe, aes(x = reorder(Program.Network, -GRPs), 
-                             y = GRPs, fill = GN.Top.Genre)) +
+                                  y = GRPs, fill = GN.Top.Genre)) +
     geom_bar(position = "dodge", stat = "identity") +
     xlab("Program\\Network") + 
     # xlab("") +
@@ -653,7 +682,7 @@ iterate_over_group <- function(age_string, df, color_vector) {
     scale_fill_manual(values = color_vector)
   
   gg5 <- ggplot(overnight, aes(x = reorder(Program.Network, -GRPs), 
-                                  y = GRPs, fill = GN.Top.Genre)) +
+                               y = GRPs, fill = GN.Top.Genre)) +
     geom_bar(position = "dodge", stat = "identity") +
     # xlab("Program\\Network") + 
     xlab("") +
@@ -828,7 +857,7 @@ iterate_over_network <- function(title_string, df, color_vector) {
   # i was iteratively building these plots and making sure it worked first
   
   gg1 <- ggplot(morning, aes(x = reorder(Network, -GRPs), 
-                               y = GRPs, fill = GN.Top.Genre)) +
+                             y = GRPs, fill = GN.Top.Genre)) +
     geom_bar(position = "dodge", stat = "identity") +
     # xlab("Program\\Network") +
     xlab("") +
@@ -851,7 +880,7 @@ iterate_over_network <- function(title_string, df, color_vector) {
     scale_fill_manual(values = color_vector)
   
   gg3 <- ggplot(early_fringe, aes(x = reorder(Network, -GRPs), 
-                             y = GRPs, fill = GN.Top.Genre)) +
+                                  y = GRPs, fill = GN.Top.Genre)) +
     geom_bar(position = "dodge", stat = "identity") +
     xlab("Network") + 
     # xlab("") +
@@ -875,7 +904,7 @@ iterate_over_network <- function(title_string, df, color_vector) {
     scale_fill_manual(values = color_vector)
   
   gg5 <- ggplot(overnight, aes(x = reorder(Network, -GRPs), 
-                                  y = GRPs, fill = GN.Top.Genre)) +
+                               y = GRPs, fill = GN.Top.Genre)) +
     geom_bar(position = "dodge", stat = "identity") +
     # xlab("Program\\Network") + 
     xlab("") +
@@ -938,7 +967,7 @@ iterate_over_network.group <- function(title_string, df, color_vector) {
   # i was iteratively building these plots and making sure it worked first
   
   gg1 <- ggplot(morning, aes(x = reorder(Network.Group, -GRPs), 
-                               y = GRPs, fill = GN.Top.Genre)) +
+                             y = GRPs, fill = GN.Top.Genre)) +
     geom_bar(position = "dodge", stat = "identity") +
     # xlab("Program\\Network") +
     xlab("") +
@@ -961,7 +990,7 @@ iterate_over_network.group <- function(title_string, df, color_vector) {
     scale_fill_manual(values = color_vector)
   
   gg3 <- ggplot(early_fringe, aes(x = reorder(Network.Group, -GRPs), 
-                             y = GRPs, fill = GN.Top.Genre)) +
+                                  y = GRPs, fill = GN.Top.Genre)) +
     geom_bar(position = "dodge", stat = "identity") +
     xlab("Network") + 
     # xlab("") +
@@ -985,7 +1014,7 @@ iterate_over_network.group <- function(title_string, df, color_vector) {
     scale_fill_manual(values = color_vector)
   
   gg5 <- ggplot(overnight, aes(x = reorder(Network.Group, -GRPs), 
-                                  y = GRPs, fill = GN.Top.Genre)) +
+                               y = GRPs, fill = GN.Top.Genre)) +
     geom_bar(position = "dodge", stat = "identity") +
     # xlab("Program\\Network") + 
     xlab("") +
@@ -1035,7 +1064,7 @@ ggplot(agg.network.top, aes(x = reorder(Daypart, plot.order), y = GRPs, col = Ne
   geom_point() +
   geom_text(aes(label = Network, vjust = -1, hjust = 1), cex = 3, color = "black") +
   ggtitle("Networks with Highest GRPs for Each Target within Each Daypart")
- # scale_color_manual(c(, , , ))
+# scale_color_manual(c(, , , ))
 # rsg_pallete
 # i think this would look better as bar graph
 ggplot(agg.network.top, aes(x = reorder(Daypart, -plot.order), y = GRPs, fill = Network)) +
